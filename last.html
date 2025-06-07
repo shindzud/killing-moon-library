@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="ru" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="telegram-web-app" content="true">
+    <title>Killing Moon - Библиотека Ужасов</title>
+    <meta name="description" content="Создавайте и читайте захватывающие истории ужасов">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'dark': {
+                            950: '#020202',
+                            900: '#0a0a0a',
+                            850: '#0f0f0f',
+                            800: '#1a1a1a',
+                            750: '#1f1f1f',
+                            700: '#2a2a2a',
+                            600: '#3a3a3a',
+                        },
+                        'horror': {
+                            primary: '#8B0000',
+                            secondary: '#660000',
+                            accent: '#FF4444',
+                            dark: '#1a0505',
+                            glow: '#ff0000',
+                        }
+                    },
+                    fontFamily: {
+                        'horror': ['monospace'],
+                        'gothic': ['serif'],
+                        'elegant': ['serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.3s ease-out',
+                        'slide-up': 'slideUp 0.3s ease-out',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'scale(0.95)' },
+                            '100%': { opacity: '1', transform: 'scale(1)' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(10px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        glow: {
+                            '0%': { boxShadow: '0 0 5px currentColor' },
+                            '100%': { boxShadow: '0 0 15px currentColor' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        :root {
+            --primary: #8B0000;
+            --secondary: #660000;
+            --accent: #FF4444;
+            --bg-dark: #1a0505;
+            --text-light: #f8f8f8;
+            --tg-color-scheme: var(--tg-color-scheme, dark);
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a0505 0%, #0a0a0a 100%);
+            color: var(--text-light);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-template-rows: auto 1fr;
+            height: 100vh;
+            max-height: 100vh;
+        }
+
+        .header {
+            background: rgba(26, 5, 5, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--primary);
+            padding: 8px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 50;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .menu-button {
+            background: var(--primary);
+            border: none;
+            border-radius: 8px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .menu-button:hover {
+            background: var(--accent);
+            transform: scale(1.05);
+        }
+
+        .menu-dots {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .dot {
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .main-content {
+            padding: 12px;
+            overflow-y: auto;
+            height: calc(100vh - 60px);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: linear-gradient(145deg, #1f1f1f, #0f0f0f);
+            border: 1px solid var(--primary);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .input-field {
+            background: rgba(31, 31, 31, 0.8);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 12px;
+            color: white;
+            width: 100%;
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 10px rgba(255, 68, 68, 0.3);
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .story-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 12px;
+        }
+
+        .story-card {
+            background: linear-gradient(145deg, #1f1f1f, #0f0f0f);
+            border: 1px solid var(--primary);
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .story-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: rgba(15, 15, 15, 0.98);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--primary);
+            border-radius: 12px;
+            padding: 8px;
+            min-width: 200px;
+            z-index: 100;
+            animation: slideUp 0.2s ease-out;
+        }
+
+        .dropdown-item {
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            white-space: nowrap;
+        }
+
+        .dropdown-item:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: linear-gradient(145deg, #1f1f1f, #0f0f0f);
+            border: 2px solid var(--primary);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 12px;
+            text-align: center;
+        }
+
+        .stat-item {
+            background: rgba(31, 31, 31, 0.5);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--primary);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--primary);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            z-index: 300;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .glow-text {
+            text-shadow: 0 0 10px var(--primary);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        /* Scrollbar for main content */
+        .main-content::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .main-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .main-content::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
+        /* Compact design adjustments */
+        .compact-form {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 8px;
+            align-items: end;
+        }
+
+        .compact-stats {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .genre-tag {
+            background: var(--primary);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            display: inline-block;
+        }
+
+        @media (max-width: 480px) {
+            .story-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header with compact menu -->
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <span>🌙</span>
+                <span>Killing Moon</span>
+            </div>
+            
+            <button class="menu-button" onclick="toggleMenu()" id="menu-btn">
+                <div class="menu-dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            </button>
+            
+            <!-- Dropdown Menu -->
+            <div id="dropdown-menu" class="dropdown-menu" style="display: none;">
+                <div class="dropdown-item" onclick="showTab('writer')">
+                    <span>✍️</span>
+                    <span>Писать</span>
+                </div>
+                <div class="dropdown-item" onclick="showTab('library')">
+                    <span>📚</span>
+                    <span>Библиотека</span>
+                </div>
+                <div class="dropdown-item" onclick="showTab('generator')">
+                    <span>🎲</span>
+                    <span>Генератор</span>
+                </div>
+                <div class="dropdown-item" onclick="showTab('profile')">
+                    <span>👤</span>
+                    <span>Профиль</span>
+                </div>
+                <hr style="border-color: var(--primary); margin: 8px 0;">
+                <div class="dropdown-item" onclick="toggleTheme()">
+                    <span>🎨</span>
+                    <span>Сменить тему</span>
+                </div>
+                <div class="dropdown-item" onclick="exportData()">
+                    <span>📤</span>
+                    <span>Экспорт</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Writer Tab -->
+            <div id="writer-tab" class="tab-content active">
+                <div class="card">
+                    <h2 class="glow-text mb-4 text-xl">✍️ Новая История</h2>
+                    
+                    <div class="mb-4">
+                        <input type="text" id="story-title" placeholder="Название истории..." class="input-field mb-3">
+                        
+                        <div class="grid grid-cols-2 gap-2 mb-3">
+                            <select id="story-genre" class="input-field">
+                                <option value="horror">🩸 Ужасы</option>
+                                <option value="mystery">🔍 Мистика</option>
+                                <option value="thriller">⚡ Триллер</option>
+                                <option value="gothic">🏰 Готика</option>
+                            </select>
+                            
+                            <select id="story-mood" class="input-field">
+                                <option value="dark">🌑 Мрачное</option>
+                                <option value="suspenseful">😰 Напряженное</option>
+                                <option value="mysterious">🕯️ Таинственное</option>
+                                <option value="atmospheric">🌫️ Атмосферное</option>
+                            </select>
+                        </div>
+                        
+                        <textarea id="story-content" placeholder="Начните свою историю ужасов..." 
+                                class="input-field" rows="8" oninput="updateStats()"></textarea>
+                    </div>
+                    
+                    <!-- Writing Stats -->
+                    <div class="stats-grid mb-4">
+                        <div class="stat-item">
+                            <div class="text-lg font-bold text-red-400" id="word-count">0</div>
+                            <div class="text-xs">слов</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="text-lg font-bold text-red-400" id="char-count">0</div>
+                            <div class="text-xs">символов</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="text-lg font-bold text-red-400" id="read-time">0</div>
+                            <div class="text-xs">мин</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="text-lg font-bold text-red-400" id="horror-score">0</div>
+                            <div class="text-xs">ужас</div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-2 flex-wrap">
+                        <button class="btn" onclick="saveStory()">
+                            <span>💾</span>
+                            <span>Сохранить</span>
+                        </button>
+                        <button class="btn" onclick="previewStory()">
+                            <span>👁️</span>
+                            <span>Просмотр</span>
+                        </button>
+                        <button class="btn btn-sm" onclick="insertTemplate()">📝 Шаблон</button>
+                        <button class="btn btn-sm" onclick="generateIdea()">💡 Идея</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Library Tab -->
+            <div id="library-tab" class="tab-content">
+                <div class="card">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="glow-text text-xl">📚 Библиотека</h2>
+                        <button class="btn btn-sm" onclick="randomStory()">🎲 Случайная</button>
+                    </div>
+                    
+                    <div class="compact-form mb-4">
+                        <input type="text" id="search-input" placeholder="🔍 Поиск..." 
+                               class="input-field" oninput="searchStories()">
+                        <select id="sort-select" class="input-field w-auto" onchange="sortStories()">
+                            <option value="newest">Новые</option>
+                            <option value="rating">Рейтинг</option>
+                            <option value="words">Длина</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex gap-2 mb-4 overflow-x-auto">
+                        <button class="btn btn-sm filter-btn active" onclick="filterLibrary('all')">Все</button>
+                        <button class="btn btn-sm filter-btn" onclick="filterLibrary('horror')">🩸</button>
+                        <button class="btn btn-sm filter-btn" onclick="filterLibrary('mystery')">🔍</button>
+                        <button class="btn btn-sm filter-btn" onclick="filterLibrary('thriller')">⚡</button>
+                        <button class="btn btn-sm filter-btn" onclick="filterLibrary('gothic')">🏰</button>
+                    </div>
+                </div>
+                
+                <div id="library-content" class="story-grid">
+                    <!-- Stories will be populated here -->
+                </div>
+            </div>
+
+            <!-- Generator Tab -->
+            <div id="generator-tab" class="tab-content">
+                <div class="card">
+                    <h2 class="glow-text mb-4 text-xl">🎲 Генератор Историй</h2>
+                    
+                    <div class="grid grid-cols-1 gap-3 mb-4">
+                        <select id="gen-type" class="input-field">
+                            <option value="idea">💡 Идея истории</option>
+                            <option value="opening">🚪 Начало истории</option>
+                            <option value="character">👤 Персонаж</option>
+                            <option value="plot-twist">🌪️ Поворот сюжета</option>
+                        </select>
+                        
+                        <select id="gen-genre" class="input-field">
+                            <option value="random">🎲 Случайный жанр</option>
+                            <option value="classic-horror">🧛 Классический ужас</option>
+                            <option value="psychological">🧠 Психологический</option>
+                            <option value="supernatural">👻 Сверхъестественное</option>
+                        </select>
+                        
+                        <div>
+                            <label class="block text-sm mb-2">⚡ Интенсивность ужаса:</label>
+                            <input type="range" id="horror-intensity" min="1" max="10" value="5" 
+                                   class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                    </div>
+                    
+                    <button class="btn w-full mb-4" onclick="generateStory()">
+                        <span>🎲</span>
+                        <span>Сгенерировать</span>
+                        <span>✨</span>
+                    </button>
+                    
+                    <div id="generated-content" class="card" style="display: none;">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="text-lg">📜 Результат</h3>
+                            <div class="flex gap-2">
+                                <button class="btn btn-sm" onclick="regenerateStory()">🔄</button>
+                                <button class="btn btn-sm" onclick="useGenerated()">✍️</button>
+                            </div>
+                        </div>
+                        <div id="generated-text" class="text-sm leading-relaxed"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Tab -->
+            <div id="profile-tab" class="tab-content">
+                <div class="card">
+                    <h2 class="glow-text mb-4 text-xl">👤 Профиль</h2>
+                    
+                    <div class="mb-4">
+                        <input type="text" id="author-name" placeholder="Ваше имя..." class="input-field mb-3">
+                        <textarea id="author-bio" placeholder="О себе..." class="input-field" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="stats-grid mb-4">
+                        <div class="stat-item">
+                            <div class="text-lg font-bold text-red-400" id="user-stories">0</div>
+                            <div class="text-xs">историй</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="text-lg font-bold text-red-400" id="user-words">0</div>
+                            <div class="text-xs">слов</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="text-lg font-bold text-red-400" id="user-level">1</div>
+                            <div class="text-xs">уровень</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="text-lg font-bold text-red-400" id="user-rating">0</div>
+                            <div class="text-xs">рейтинг</div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <button class="btn" onclick="saveProfile()">💾 Сохранить</button>
+                        <button class="btn" onclick="shareProfile()">📤 Поделиться</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for story reading -->
+    <div id="story-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="modal-title" class="text-xl font-bold"></h3>
+                <button onclick="closeModal()" class="text-2xl">&times;</button>
+            </div>
+            <div id="modal-content" class="text-sm leading-relaxed"></div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification" style="display: none;"></div>
+
+    <script>
+        // Initialize Telegram WebApp
+        if (window.Telegram?.WebApp) {
+            window.Telegram.WebApp.ready();
+            window.Telegram.WebApp.expand();
+            
+            // Set theme colors
+            if (window.Telegram.WebApp.themeParams) {
+                document.documentElement.style.setProperty('--tg-bg-color', window.Telegram.WebApp.themeParams.bg_color || '#1a0505');
+                document.documentElement.style.setProperty('--tg-text-color', window.Telegram.WebApp.themeParams.text_color || '#ffffff');
+            }
+        }
+
+        // App State
+        let currentTab = 'writer';
+        let stories = [
+            {
+                id: 1,
+                title: "Особняк на Убивающей Луне",
+                author: "Мастер Ужаса",
+                genre: "horror",
+                content: "В ту ночь, когда луна светила кровавым светом, старый особняк на холме ожил своей собственной жизнью. Каждая доска скрипела зловещую мелодию, а тени танцевали в ритме неслышимой музыки.\n\nМолодая пара, заблудившись в лесу, увидела свет в окнах и подумала, что им повезло найти убежище. Но это было только начало их кошмара.\n\nДверь открылась сама собой, приглашая их войти в мир, где время остановилось сто лет назад, где призраки прошлого все еще искали покоя, а стены помнили каждый крик, каждую слезу, каждую каплю пролитой крови.",
+                wordCount: 387,
+                date: new Date().toLocaleDateString(),
+                rating: 4.8,
+                views: 1250,
+                horrorScore: 85
+            },
+            {
+                id: 2,
+                title: "Шепот в тени",
+                author: "Темный Поэт",
+                genre: "mystery",
+                content: "Детектив Марлоу не верил в призраков, пока не услышал этот шепот. Он доносился из каждого угла старого дома, рассказывая историю, которую никто не должен был знать.\n\nВ доме, где произошло убийство сто лет назад, правда всегда найдет способ выйти наружу. Но что, если эта правда страшнее самой смерти?\n\nКаждую ночь шепот становился громче, а видения -- яснее. Марлоу понимал, что время уходит, и если он не разгадает эту тайну, то станет следующей жертвой проклятия.",
+                wordCount: 245,
+                date: new Date().toLocaleDateString(),
+                rating: 4.5,
+                views: 890,
+                horrorScore: 72
+            }
+        ];
+        
+        let userProfile = {
+            name: '',
+            bio: '',
+            stories: 0,
+            words: 0,
+            level: 1,
+            rating: 0
+        };
+
+        // Navigation Functions
+        function toggleMenu() {
+            const menu = document.getElementById('dropdown-menu');
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + '-tab').classList.add('active');
+            currentTab = tabName;
+            
+            // Close menu
+            document.getElementById('dropdown-menu').style.display = 'none';
+            
+            // Initialize tab-specific content
+            if (tabName === 'library') {
+                displayLibrary();
+            } else if (tabName === 'profile') {
+                updateProfileStats();
+            }
+        }
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('dropdown-menu');
+            const menuBtn = document.getElementById('menu-btn');
+            
+            if (!menu.contains(event.target) && !menuBtn.contains(event.target)) {
+                menu.style.display = 'none';
+            }
+        });
+
+        // Writer Functions
+        function updateStats() {
+            const content = document.getElementById('story-content').value;
+            const words = content.trim() ? content.trim().split(/\s+/).length : 0;
+            const chars = content.length;
+            const readTime = Math.ceil(words / 200);
+            const horrorScore = calculateHorrorScore(content);
+            
+            document.getElementById('word-count').textContent = words;
+            document.getElementById('char-count').textContent = chars;
+            document.getElementById('read-time').textContent = readTime;
+            document.getElementById('horror-score').textContent = horrorScore;
+        }
+
+        function calculateHorrorScore(text) {
+            const horrorWords = ['страх', 'ужас', 'кровь', 'смерть', 'призрак', 'тьма', 'кошмар', 'мрак'];
+            const words = text.toLowerCase().split(/\s+/);
+            let score = 0;
+            
+            words.forEach(word => {
+                if (horrorWords.some(hw => word.includes(hw))) {
+                    score += 5;
+                }
+            });
+            
+            return Math.min(score, 100);
+        }
+
+        function saveStory() {
+            const title = document.getElementById('story-title').value.trim();
+            const content = document.getElementById('story-content').value.trim();
+            const genre = document.getElementById('story-genre').value;
+            const mood = document.getElementById('story-mood').value;
+            
+            if (!title || !content) {
+                showNotification('❌ Заполните название и содержание!');
+                return;
+            }
+            
+            const newStory = {
+                id: Date.now(),
+                title: title,
+                author: userProfile.name || 'Аноним',
+                genre: genre,
+                mood: mood,
+                content: content,
+                wordCount: content.split(/\s+/).length,
+                date: new Date().toLocaleDateString(),
+                rating: 0,
+                views: 0,
+                horrorScore: calculateHorrorScore(content)
+            };
+            
+            stories.unshift(newStory);
+            userProfile.stories++;
+            userProfile.words += newStory.wordCount;
+            
+            // Clear form
+            document.getElementById('story-title').value = '';
+            document.getElementById('story-content').value = '';
+            updateStats();
+            
+            showNotification('✅ История сохранена!');
+            
+            // Switch to library
+            setTimeout(() => showTab('library'), 1000);
+        }
+
+        function previewStory() {
+            const title = document.getElementById('story-title').value.trim();
+            const content = document.getElementById('story-content').value.trim();
+            
+            if (!title || !content) {
+                showNotification('❌ Нет контента для просмотра!');
+                return;
+            }
+            
+            openStoryModal({
+                title: title,
+                author: userProfile.name || 'Аноним',
+                content: content,
+                wordCount: content.split(/\s+/).length,
+                date: 'Предпросмотр'
+            });
+        }
+
+        function insertTemplate() {
+            const templates = [
+                "В холодную октябрьскую ночь, когда ветер выл за окном...",
+                "Старинное зеркало в углу комнаты отражало не то, что должно было...",
+                "Последний звонок в пустой школе прозвенел в полночь...",
+                "Детская коляска сама собой каталась по заброшенному парку...",
+                "В подвале старого дома нашли дневник, написанный кровью..."
+            ];
+            
+            const template = templates[Math.floor(Math.random() * templates.length)];
+            document.getElementById('story-content').value = template + ' ';
+            updateStats();
+            showNotification('📝 Шаблон вставлен!');
+        }
+
+        function generateIdea() {
+            const ideas = [
+                "💡 Смартфон, который получает сообщения от мертвых",
+                "💡 Зеркало, показывающее события из параллельного мира",
+                "💡 Книга, переписывающая реальность при каждом прочтении",
+                "💡 Фотоаппарат, снимающий будущее вместо настоящего",
+                "💡 Лифт, который поднимается в другие измерения"
+            ];
+            
+            const idea = ideas[Math.floor(Math.random() * ideas.length)];
+            showNotification(idea, 3000);
+        }
+
+        // Library Functions
+        function displayLibrary(filter = 'all') {
+            const container = document.getElementById('library-content');
+            let filteredStories = filter === 'all' ? stories : stories.filter(story => story.genre === filter);
+            
+            // Apply search filter
+            const searchTerm = document.getElementById('search-input')?.value.toLowerCase();
+            if (searchTerm) {
+                filteredStories = filteredStories.filter(story => 
+                    story.title.toLowerCase().includes(searchTerm) || 
+                    story.author.toLowerCase().includes(searchTerm) ||
+                    story.content.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            container.innerHTML = filteredStories.map(story => `
+                <div class="story-card" onclick="openStoryModal(${JSON.stringify(story).replace(/"/g, '&quot;')})">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="font-semibold text-sm line-clamp-2">${story.title}</h3>
+                        <span class="genre-tag">${getGenreIcon(story.genre)}</span>
+                    </div>
+                    
+                    <div class="compact-stats mb-2">
+                        <span>👤 ${story.author}</span>
+                        <span>📅 ${story.date}</span>
+                        <span>👁️ ${story.views || 0}</span>
+                    </div>
+                    
+                    <p class="text-sm text-gray-300 mb-3 line-clamp-3">${story.content.substring(0, 100)}...</p>
+                    
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="text-yellow-400">⭐ ${story.rating}</span>
+                        <span>${story.wordCount} слов</span>
+                        <span class="text-red-400">💀 ${story.horrorScore || 0}</span>
+                    </div>
+                </div>
+            `).join('');
+
+            if (filteredStories.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-8 text-gray-500">
+                        <div class="text-4xl mb-2">📚</div>
+                        <p>Истории не найдены</p>
+                    </div>
+                `;
+            }
+        }
+
+        function getGenreIcon(genre) {
+            const icons = {
+                'horror': '🩸',
+                'mystery': '🔍',
+                'thriller': '⚡',
+                'gothic': '🏰',
+                'supernatural': '👻',
+                'psychological': '🧠'
+            };
+            return icons[genre] || '📖';
+        }
+
+        function filterLibrary(genre) {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active', 'bg-red-700');
+            });
+            event.target.classList.add('active', 'bg-red-700');
+            displayLibrary(genre);
+        }
+
+        function searchStories() {
+            displayLibrary();
+        }
+
+        function sortStories() {
+            displayLibrary();
+        }
+
+        function randomStory() {
+            if (stories.length > 0) {
+                const randomIndex = Math.floor(Math.random() * stories.length);
+                openStoryModal(stories[randomIndex]);
+            }
+        }
+
+        // Generator Functions
+        function generateStory() {
+            const type = document.getElementById('gen-type').value;
+            const genre = document.getElementById('gen-genre').value;
+            const intensity = document.getElementById('horror-intensity').value;
+            
+            let content = '';
+            
+            switch (type) {
+                case 'idea':
+                    content = generateStoryIdea(genre, intensity);
+                    break;
+                case 'opening':
+                    content = generateStoryOpening(genre, intensity);
+                    break;
+                case 'character':
+                    content = generateCharacter(genre);
+                    break;
+                case 'plot-twist':
+                    content = generatePlotTwist(genre, intensity);
+                    break;
+            }
+            
+            document.getElementById('generated-content').style.display = 'block';
+            document.getElementById('generated-text').textContent = content;
+            
+            showNotification('✨ История сгенерирована!');
+        }
+
+        function generateStoryIdea(genre, intensity) {
+            const ideas = {
+                'classic-horror': [
+                    'Древний дом с темной историей привлекает новых жертв',
+                    'Проклятый артефакт пробуждает древнее зло',
+                    'В маленьком городке начинают происходить странные исчезновения'
+                ],
+                'psychological': [
+                    'Человек начинает сомневаться в собственной реальности',
+                    'Терапевт обнаруживает, что его пациент -- это он сам',
+                    'Воспоминания начинают меняться, стирая прошлое'
+                ]
+            };
+            
+            const genreIdeas = ideas[genre] || ideas['classic-horror'];
+            return genreIdeas[Math.floor(Math.random() * genreIdeas.length)];
+        }
+
+        function generateStoryOpening() {
+            const openings = [
+                "Последний раз Анна видела свое отражение три дня назад. Сегодня в зеркале была только пустота.",
+                "Детская игрушка в углу комнаты двигалась только тогда, когда никто не смотрел.",
+                "Письмо пришло от человека, который умер десять лет назад. Почерк был узнаваемым.",
+                "В 3:33 каждую ночь все часы в доме останавливались. Кроме одних."
+            ];
+            
+            return openings[Math.floor(Math.random() * openings.length)];
+        }
+
+        function generateCharacter() {
+            const names = ['Анна', 'Михаил', 'Елена', 'Дмитрий', 'Ольга'];
+            const professions = ['врач', 'учитель', 'журналист', 'психолог', 'детектив'];
+            const traits = ['скептик', 'мнительный', 'любопытный', 'осторожный', 'импульсивный'];
+            
+            const name = names[Math.floor(Math.random() * names.length)];
+            const profession = professions[Math.floor(Math.random() * professions.length)];
+            const trait = traits[Math.floor(Math.random() * traits.length)];
+            
+            return `Персонаж: ${name}, ${profession}, характер: ${trait}`;
+        }
+
+        function generatePlotTwist() {
+            const twists = [
+                'Главный герой сам является источником всех ужасающих событий',
+                'События происходят в сознании персонажа, находящегося в коме',
+                'Все персонажи истории уже мертвы и не осознают этого',
+                'Монстр оказывается защитником, а люди -- настоящими злодеями'
+            ];
+            
+            return twists[Math.floor(Math.random() * twists.length)];
+        }
+
+        function regenerateStory() {
+            generateStory();
+        }
+
+        function useGenerated() {
+            const generatedText = document.getElementById('generated-text').textContent;
+            document.getElementById('story-content').value += '\n\n' + generatedText;
+            updateStats();
+            showTab('writer');
+            showNotification('✍️ Контент добавлен в редактор!');
+        }
+
+        // Profile Functions
+        function updateProfileStats() {
+            document.getElementById('user-stories').textContent = userProfile.stories;
+            document.getElementById('user-words').textContent = userProfile.words.toLocaleString();
+            document.getElementById('user-level').textContent = userProfile.level;
+            document.getElementById('user-rating').textContent = userProfile.rating.toFixed(1);
+        }
+
+        function saveProfile() {
+            userProfile.name = document.getElementById('author-name').value.trim();
+            userProfile.bio = document.getElementById('author-bio').value.trim();
+            
+            showNotification('💾 Профиль сохранен!');
+        }
+
+        function shareProfile() {
+            const text = `🖤 Мой профиль в Killing Moon 🖤\n\n👤 ${userProfile.name || 'Аноним'}\n📚 Историй: ${userProfile.stories}\n📝 Слов: ${userProfile.words}\n🏆 Уровень: ${userProfile.level}`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Мой профиль в Killing Moon',
+                    text: text
+                });
+            } else {
+                navigator.clipboard.writeText(text);
+                showNotification('📋 Профиль скопирован!');
+            }
+        }
+
+        // Modal Functions
+        function openStoryModal(story) {
+            document.getElementById('modal-title').textContent = story.title;
+            document.getElementById('modal-content').innerHTML = `
+                <div class="text-sm text-gray-400 mb-4">
+                    👤 ${story.author} • 📅 ${story.date} • 📝 ${story.wordCount} слов
+                </div>
+                <div class="text-base leading-relaxed">
+                    ${story.content.split('\n').map(p => `<p class="mb-4">${p}</p>`).join('')}
+                </div>
+            `;
+            document.getElementById('story-modal').style.display = 'flex';
+            
+            // Increment views
+            if (story.id) {
+                const storyIndex = stories.findIndex(s => s.id === story.id);
+                if (storyIndex !== -1) {
+                    stories[storyIndex].views = (stories[storyIndex].views || 0) + 1;
+                }
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('story-modal').style.display = 'none';
+        }
+
+        // Utility Functions
+        function showNotification(message, duration = 2000) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, duration);
+        }
+
+        function toggleTheme() {
+            // Cycle through themes
+            const themes = ['horror', 'mystical', 'vampire', 'witch'];
+            const currentTheme = document.body.getAttribute('data-theme') || 'horror';
+            const currentIndex = themes.indexOf(currentTheme);
+            const nextTheme = themes[(currentIndex + 1) % themes.length];
+            
+            document.body.setAttribute('data-theme', nextTheme);
+            showNotification(`🎨 Тема: ${nextTheme}`);
+            
+            // Close menu
+            document.getElementById('dropdown-menu').style.display = 'none';
+        }
+
+        function exportData() {
+            const data = {
+                profile: userProfile,
+                stories: stories.filter(s => s.author === (userProfile.name || 'Аноним')),
+                exportDate: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `killing-moon-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showNotification('📤 Данные экспортированы!');
+            
+            // Close menu
+            document.getElementById('dropdown-menu').style.display = 'none';
+        }
+
+        // Initialize app
+        displayLibrary();
+        updateProfileStats();
+        updateStats();
+
+        // Send data to Telegram
+        if (window.Telegram?.WebApp) {
+            window.Telegram.WebApp.onEvent('mainButtonClicked', function() {
+                // Handle main button click
+                saveStory();
+            });
+        }
+    </script>
+</body>
+</html>
